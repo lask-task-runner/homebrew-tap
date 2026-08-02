@@ -8,6 +8,7 @@ This repository provides the Homebrew Formula and related assets needed to insta
 
 ```bash
 brew tap lask-task-runner/tap
+brew trust lask-task-runner/tap
 brew install lask
 ```
 
