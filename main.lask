@@ -1,0 +1,92 @@
+// Release tasks for the Lask Homebrew tap. They run on the host, with
+// git and an authenticated gh, and read the checksums GitHub records for
+// each asset of a lask release.
+//
+//   lask run release 0.9.0    # after lask v0.9.0 is published
+
+lask_repo = "lask-task-runner/lask"
+
+type Asset = Record<name: String, digest: String | Null>
+
+// The sha256 of each asset of a lask release, by file name.
+internal digests(tag: String): Map<String> = do {
+  out = $[#local] gh release view #{tag} --repo #{lask_repo} --json assets --jq '{assets: [.assets[] | {name, digest}]}'
+  listed: Record<assets: Array<Asset>> = cast(from_json(out))
+  from_entries(map(listed.assets, \(a: Asset) -> {key: a.name, value: sha256_of(a)}))
+}
+
+internal sha256_of(a: Asset): String = do {
+  d = a.digest
+  case (d) {
+    Null -> fail(error(1, "GitHub records no digest for #{a.name}"))
+    else -> replace(d, "sha256:", "")
+  }
+}
+
+internal asset(sums: Map<String>, tag: String, target: String): String = do {
+  name = "lask-#{tag}-#{target}.tar.gz"
+  if (!has_key(sums, name)) {
+    return fail(error(1, "#{tag} has no #{name}"))
+  }
+  join([
+    "      url \"https://github.com/#{lask_repo}/releases/download/#{tag}/#{name}\"",
+    "      sha256 \"#{sums[name]}\""
+  ], "\n")
+}
+
+// Write Formula/lask.rb for a released version of lask.
+//
+// @param version  Released version, without the leading v.
+// @return The formula's path.
+// @example lask run formula 0.9.0
+formula(version: String): String = do {
+  tag = "v#{version}"
+  sums = digests(tag)
+  text = join([
+    "class Lask < Formula",
+    "  desc \"Lask is a task runner based on functional programming.\"",
+    "  homepage \"https://github.com/#{lask_repo}\"",
+    "  license \"MIT\"",
+    "",
+    "  on_macos do",
+    "    on_arm do",
+    asset(sums, tag, "macos-arm64"),
+    "    end",
+    "    on_intel do",
+    asset(sums, tag, "macos-amd64"),
+    "    end",
+    "  end",
+    "",
+    "  on_linux do",
+    "    on_intel do",
+    asset(sums, tag, "linux-amd64"),
+    "    end",
+    "  end",
+    "",
+    "  def install",
+    "    bin.install \"lask\"",
+    "  end",
+    "",
+    "",
+    "  test do",
+    // Ruby's own interpolation, kept out of Lask's.
+    concat("    system \"#", "{bin}/lask\", \"--help\""),
+    "  end",
+    "end",
+    ""
+  ], "\n")
+  write_file("Formula/lask.rb", text, #local)
+  "Formula/lask.rb"
+}
+
+// Point the formula at a released version of lask, commit and push it.
+//
+// @param version  Released version, without the leading v.
+// @example lask run release 0.9.0
+release(version: String) = do {
+  $[#local] git switch -q main && git pull -q --ff-only origin main
+  file = formula(version)
+  $[#local] git commit -q -m "Update Lask formula to version #{version}" -- #{file}
+  $[#local] git push -q origin main
+  log("published; check with: brew update && brew upgrade lask && lask version")
+}
