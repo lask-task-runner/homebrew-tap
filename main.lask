@@ -25,13 +25,13 @@ internal sha256_of(a: Asset): String = do {
 
 internal asset(sums: Map<String>, tag: String, target: String): String = do {
   name = "lask-#{tag}-#{target}.tar.gz"
-  if (!has_key(sums, name)) {
-    return fail(error(1, "#{tag} has no #{name}"))
+  case {
+    !has_key(sums, name) -> fail(error(1, "#{tag} has no #{name}"))
+    else -> join([
+      "      url \"https://github.com/#{lask_repo}/releases/download/#{tag}/#{name}\"",
+      "      sha256 \"#{sums[name]}\""
+    ], "\n")
   }
-  join([
-    "      url \"https://github.com/#{lask_repo}/releases/download/#{tag}/#{name}\"",
-    "      sha256 \"#{sums[name]}\""
-  ], "\n")
 }
 
 // The formula text for a released version of lask, under a class name.
