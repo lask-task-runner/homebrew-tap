@@ -12,6 +12,14 @@ brew trust lask-task-runner/tap
 brew install lask
 ```
 
+To install a particular release instead, name its versioned formula:
+
+```bash
+brew install lask-task-runner/tap/lask@0.9.0
+```
+
+A versioned formula is keg-only: it does not link `lask` into your `PATH`, so it can sit beside `lask` and other versions. Run it as `$(brew --prefix lask@0.9.0)/bin/lask`, or `brew link --force lask@0.9.0` (after `brew unlink lask`) to make it the `lask` on your `PATH`.
+
 ## Contents
 
 - Homebrew Formula for `lask`
@@ -32,4 +40,4 @@ After lask `vX.Y.Z` is published, with [Lask](https://github.com/lask-task-runne
 lask run release X.Y.Z
 ```
 
-It rewrites `Formula/lask.rb` for that release, taking each archive's `sha256` from what GitHub records for it, then commits and pushes `main`. `lask run formula X.Y.Z` only writes the file.
+It rewrites `Formula/lask.rb` for that release and adds `Formula/lask@X.Y.Z.rb`, taking each archive's `sha256` from what GitHub records for it, then commits and pushes `main`. `lask run formula X.Y.Z` only writes the files.

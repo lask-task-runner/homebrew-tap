@@ -34,20 +34,20 @@ internal asset(sums: Map<String>, tag: String, target: String): String = do {
   ], "\n")
 }
 
-// Write Formula/lask.rb for a released version of lask.
-//
-// @param version  Released version, without the leading v.
-// @return The formula's path.
-// @example lask run formula 0.9.0
-formula(version: String): String = do {
+// The formula text for a released version of lask, under a class name.
+// A versioned formula is keg-only, as Homebrew's own are: it installs
+// beside lask and the other versions instead of linking over them.
+internal formula_text(version: String, class_name: String, versioned: Bool): String = do {
   tag = "v#{version}"
   sums = digests(tag)
-  text = join([
-    "class Lask < Formula",
-    "  desc \"Lask is a task runner based on functional programming.\"",
+  keg = versioned ? ["  keg_only :versioned_formula", ""] : []
+  join(concat_array(concat_array([
+    "class #{class_name} < Formula",
+    "  desc \"Task runner with a typed language and pinned container environments\"",
     "  homepage \"https://github.com/#{lask_repo}\"",
     "  license \"MIT\"",
-    "",
+    ""
+  ], keg), [
     "  on_macos do",
     "    on_arm do",
     asset(sums, tag, "macos-arm64"),
@@ -67,26 +67,44 @@ formula(version: String): String = do {
     "    bin.install \"lask\"",
     "  end",
     "",
-    "",
     "  test do",
     // Ruby's own interpolation, kept out of Lask's.
     concat("    system \"#", "{bin}/lask\", \"--help\""),
     "  end",
     "end",
     ""
-  ], "\n")
-  write_file("Formula/lask.rb", text, #local)
-  "Formula/lask.rb"
+  ]), "\n")
 }
 
-// Point the formula at a released version of lask, commit and push it.
+// Homebrew's class name for lask@X.Y.Z: LaskAT followed by the digits.
+internal versioned_class(version: String): String = "LaskAT#{replace(version, ".", "")}"
+
+// Write Formula/lask.rb and Formula/lask@X.Y.Z.rb for a released version
+// of lask.
+//
+// lask.rb follows the latest release; lask@X.Y.Z.rb stays at its
+// version, so `brew install lask-task-runner/tap/lask@X.Y.Z` installs
+// that one.
+//
+// @param version  Released version, without the leading v.
+// @return The formulae's paths.
+// @example lask run formula 0.9.0
+formula(version: String): Array<String> = do {
+  latest = "Formula/lask.rb"
+  pinned = "Formula/lask@#{version}.rb"
+  write_file(latest, formula_text(version, "Lask", false), #local)
+  write_file(pinned, formula_text(version, versioned_class(version), true), #local)
+  [latest, pinned]
+}
+
+// Point the formulae at a released version of lask, commit and push them.
 //
 // @param version  Released version, without the leading v.
 // @example lask run release 0.9.0
 release(version: String) = do {
   $[#local] git switch -q main && git pull -q --ff-only origin main
-  file = formula(version)
-  $[#local] git commit -q -m "Update Lask formula to version #{version}" -- #{file}
+  files = formula(version)
+  $[#local] git add -- #{join(files, " ")} && git commit -q -m "Update Lask formula to version #{version}, and add lask@#{version}" -- #{join(files, " ")}
   $[#local] git push -q origin main
   log("published; check with: brew update && brew upgrade lask && lask version")
 }

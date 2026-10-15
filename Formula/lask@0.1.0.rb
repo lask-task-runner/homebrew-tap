@@ -1,7 +1,9 @@
-class Lask < Formula
+class LaskAT010 < Formula
   desc "Lask is a task runner based on functional programming."
   homepage "https://github.com/lask-task-runner/lask"
   license "MIT"
+
+  keg_only :versioned_formula
 
   on_macos do
     on_arm do

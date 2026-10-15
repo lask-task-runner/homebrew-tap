@@ -1,5 +1,5 @@
 class Lask < Formula
-  desc "Lask is a task runner based on functional programming."
+  desc "Task runner with a typed language and pinned container environments"
   homepage "https://github.com/lask-task-runner/lask"
   license "MIT"
 
@@ -24,7 +24,6 @@ class Lask < Formula
   def install
     bin.install "lask"
   end
-
 
   test do
     system "#{bin}/lask", "--help"
