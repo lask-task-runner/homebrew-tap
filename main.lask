@@ -104,7 +104,9 @@ formula(version: String): Array<String> = do {
 release(version: String) = do {
   $[#local] git switch -q main && git pull -q --ff-only origin main
   files = formula(version)
-  $[#local] git add -- #{join(files, " ")} && git commit -q -m "Update Lask formula to version #{version}, and add lask@#{version}" -- #{join(files, " ")}
+  // The paths go in as raw holes, one word each: a hole is escaped as
+  // one word (lask spec 6.6), and the formula paths hold no space.
+  $[#local] git add -- #!{join(files, " ")} && git commit -q -m "Update Lask formula to version #{version}, and add lask@#{version}" -- #!{join(files, " ")}
   $[#local] git push -q origin main
   log("published; check with: brew update && brew upgrade lask && lask version")
 }
