@@ -5,19 +5,19 @@ class Lask < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/lask-task-runner/lask/releases/download/v0.14.0/lask-v0.14.0-macos-arm64.tar.gz"
-      sha256 "2fdbd76df26dae34cb21c04b53f980f65d962127396f8ad2600f4971b73dd2ec"
+      url "https://github.com/lask-task-runner/lask/releases/download/v0.15.0/lask-v0.15.0-macos-arm64.tar.gz"
+      sha256 "ea1b5ed4282d389a563fcba7c5afd69501ca727190a0457f1b29e21b1d146f27"
     end
     on_intel do
-      url "https://github.com/lask-task-runner/lask/releases/download/v0.14.0/lask-v0.14.0-macos-amd64.tar.gz"
-      sha256 "e9ebbf0d6ebf3b6183f7439afb0a5e802fa75daa1a749b5c3df5a09853b420d8"
+      url "https://github.com/lask-task-runner/lask/releases/download/v0.15.0/lask-v0.15.0-macos-amd64.tar.gz"
+      sha256 "7f14fd81dc421d067aa6acda42c4d6660f8891b67b5887a24ae7c85f7298fa80"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/lask-task-runner/lask/releases/download/v0.14.0/lask-v0.14.0-linux-amd64.tar.gz"
-      sha256 "17ef059ae8a39e7e35e7fb89eb892e6e7e3c5f38a39b7fbf3ea4b1453d90ee16"
+      url "https://github.com/lask-task-runner/lask/releases/download/v0.15.0/lask-v0.15.0-linux-amd64.tar.gz"
+      sha256 "6ba0a2a1b6645b41f088eebf3a66fa783bde8b28cc5656250d482a111bfd129e"
     end
   end
 
